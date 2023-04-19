@@ -1,5 +1,9 @@
 export const img={
-    security:require("./images/Security.png")
+    security:require("./images/Security.png"),
+    menu:require("./images/menu.png"),
+    go:require("./images/go.json"),
+    done:require("./images/done.json"),
+    connecting:require("./images/connecting.json"),
 }
 
 export const font ={
@@ -15,5 +19,5 @@ export const font ={
 }
 
 export const color ={
-    primary:""
+    primary:"#2B68FA"
 }

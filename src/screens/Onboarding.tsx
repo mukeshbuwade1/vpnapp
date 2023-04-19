@@ -1,5 +1,5 @@
 import { Alert, Button, FlatList, Image, ImageSourcePropType, ListRenderItem, NativeScrollEvent, NativeScrollPoint, NativeSyntheticEvent, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { height, width } from '../constants/methods';
 import { font } from '../assets/Assets';
 import CustomButton from "../components/CustomButton"
@@ -21,24 +21,24 @@ const renderItems: ListRenderItem<ItemT> | null | undefined = ({ item, index }) 
 
 let data = [
     {
-        title: 'React Native 1',
+        title: 'Secured Forever',
         subtitle: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts.',
         image: require('../assets/images/Security.png'),
     },
     {
-        title: 'React Native 2',
+        title: 'Secured Forever1',
         subtitle: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts.',
         image: require('../assets/images/Security.png'),
     },
     {
-        title: 'React Native 3',
+        title: 'Secured Forever2',
         subtitle: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts.',
         image: require('../assets/images/Security.png'),
     },
 ]
 
 const Onboarding = () => {
-
+    const imageList = useRef<FlatList>(null)
     const [scrollOffset, setScrollOffset] = useState<{ index: number, x: number }>({ index: 0, x: 0 })
 
     const onScroll = (scrollState: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -54,15 +54,15 @@ const Onboarding = () => {
 
     const renderDots: ListRenderItem<ItemT> | null | undefined = ({ item, index }) => {
         return (
-            <View style={{ ...styles.dot ,  backgroundColor: index == scrollOffset.index ? "#555" : "#aaa" }} />
+            <View style={{ ...styles.dot, backgroundColor: index == scrollOffset.index ? "#555" : "#aaa" }} />
         )
     }
 
     return (
         <View style={styles.center} >
-
             {/* image view  */}
             <FlatList
+                ref={imageList}
                 showsHorizontalScrollIndicator={false}
                 pagingEnabled
                 horizontal
@@ -72,19 +72,21 @@ const Onboarding = () => {
                 onScroll={onScroll}
             />
             {/* text info view  */}
-            <View style={{...styles.center, paddingHorizontal:30}}>
+            <View style={{ ...styles.center, paddingHorizontal: 30 }}>
                 <Text style={styles.h2}>{data[scrollOffset.index].title}</Text>
                 <Text style={styles.text}>{data[scrollOffset.index].subtitle}</Text>
             </View>
             {/* slide  indicator view  */}
-            <FlatList            
+            <FlatList
                 horizontal
                 data={data}
                 keyExtractor={keyExtractor}
                 renderItem={renderDots}
             />
             {/* next/get start button view  */}
-          <CustomButton title={  'get start'} boxStyle={{width:"50%", marginTop:9}}  />
+            <CustomButton onPress={() => {
+                if (data.length - 1 > scrollOffset.index) imageList?.current?.scrollToIndex({ index: scrollOffset.index + 1 })
+            }} title={data.length - 1 == scrollOffset.index ? 'get start' : "next"} boxStyle={{ width: "50%", marginTop: 9 }} />
         </View>
     )
 }
@@ -107,14 +109,14 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         fontFamily: font.medium,
-        textAlign:"center"
+        textAlign: "center"
     },
     dot: {
         width: 10,
         height: 10,
         borderRadius: 10,
-        marginHorizontal:5, 
-        marginVertical:10
+        marginHorizontal: 5,
+        marginVertical: 10
     },
     imageContainer: {
         width: width,
