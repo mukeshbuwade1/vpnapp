@@ -1,15 +1,21 @@
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
-import { font, img } from '../assets/Assets'
+import { color, font, img } from '../assets/Assets'
 
-const Header = () => {
+const Header = ({ icon,onpressRightIcon }) => {
   return (
     <View style={{ ...styles.header }}>
+      {/* left icon  */}
       <View style={{ ...styles.iconBox }}>
-        <Image source={img.menu} alt={"menu icon"} style={styles.menuIconStyle} />
+        <Image source={img.menu} alt={"menu icon"}  style={styles.menuIconStyle} />
       </View>
+      {/* page heading */}
       <Text style={styles.headerTextStyle}>{"VPN"}</Text>
-      <View style={{ ...styles.iconBox }} />
+      {/* right icon  */}
+      <TouchableOpacity style={{ ...styles.iconBox,width: 55, }} onPress={onpressRightIcon} >
+        <Text style={styles.dropdownIcon}>&#x2304;</Text>
+        <Image source={icon} alt={"active vpn server icon"} style={styles.menuIconStyle} />
+      </TouchableOpacity>
     </View>
   )
 }
@@ -28,14 +34,26 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row"
   },
   menuIconStyle: {
     width: 25,
     height: 25,
+    resizeMode:"contain"
   },
   headerTextStyle: {
     fontSize: 18,
     fontFamily: font.semiBold,
     textAlign: "center",
   },
+  vpnIconStyle: {
+
+  },
+  dropdownIcon: {
+    fontSize: 30,
+    fontFamily: font.black,
+    color: color.primary,
+    marginTop:"-22%",
+    marginRight:5
+  }
 })
