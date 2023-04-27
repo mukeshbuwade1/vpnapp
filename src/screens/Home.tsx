@@ -1,4 +1,4 @@
-import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Button, ImageProps, ImageSourcePropType, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Header from '../components/Header'
 import CustomButton from '../components/CustomButton'
@@ -8,6 +8,17 @@ import Lottie from 'lottie-react-native';
 import { color, img } from '../assets/Assets'
 import BottomSheet from '@gorhom/bottom-sheet';
 import ActionSheet from '../components/ActionSheet'
+import {
+  VpnState,
+  CharonErrorState,
+  connect,
+  disconnect,
+  getCharonErrorState,
+  getCurrentState,
+  getConnectionTimeSecond,
+  onStateChangedListener,
+  prepare,
+} from 'react-native-vpn-ipsec';
 
 const stateName = {
   connected: "connected",
@@ -17,40 +28,81 @@ const stateName = {
 
 const server_data = [
   {
+    id: 1,
     name: "auto",
     icon: img.globe,
   },
   {
+    id: 2,
     name: "canada",
     icon: img.canada,
   },
   {
+    id: 3,
     name: "india",
     icon: img.india,
   },
   {
+    id: 4,
     name: "russia",
     icon: img.russia,
   },
   {
+    id: 5,
     name: "united states",
     icon: img['united-states'],
   },
 ]
 
+export interface server_data_obj {
+  id: number
+  name: string,
+  icon: ImageSourcePropType
+}
+
 const Home = () => {
-  const [state, setState] = useState(stateName?.disconnected);
+  const [state, setState] = useState(VpnState[VpnState.disconnected] ?? stateName?.disconnected);
+  const [credentials, setCredentials] = useState({
+    address: "ord3.gpvpn.com",
+    username: "",
+    password: "",
+    vpnType: "",
+    secret: "test",
+  });
   const [currentServer, setCurrentServer] = useState(server_data[0]);
-  console.log("currentServer",currentServer)
+  const [charonState, setCharonState] = useState(CharonErrorState[CharonErrorState.NO_ERROR]);
   const go = useRef<Lottie>(null)
   const done = useRef<Lottie>(null)
+  useEffect(() => {
+    prepare()
+      .then(() => console.log('prepared'))
+      .catch((err) => {
+        // only happen on android when activity is not running yet
+        console.log("prep error", err);
+        prepare();
+      });
+    onStateChangedListener((e) => {
+      console.log('state changed: ', e);
+      setState(VpnState[e.state]);
+      setCharonState(CharonErrorState[e.charonState]);
+    });
+  }, []);
 
-  function createConnection() {
+  async function createConnection() {
     setState(stateName.connecting);
-    setTimeout(() => {
-      setState(stateName.connected);
-      done.current?.play()
-    }, 2000);
+    console.log('state changed.......: ', VpnState);
+    await connect(
+      'example',
+      credentials.address,
+      credentials.username,
+      credentials.password,
+      // credentials.vpnType,
+      credentials.secret,
+      false,
+      // 0
+    )
+      .then(() => { setState(stateName.connected); done.current?.play(); console.log('connected') })
+      .catch(console.log)
   }
   const handleChange = () => {
     if (state == stateName.disconnected) {
@@ -78,12 +130,11 @@ const Home = () => {
     console.log('handleSheetChanges', index);
   }, []);
 
-  const handleClosePress = () => bottomSheetRef.current.close()
-  const handleOpenPress = () => bottomSheetRef.current.expand()
+  const handleClosePress = () => bottomSheetRef.current?.close()
+  const handleOpenPress = () => bottomSheetRef.current?.expand()
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Header  currentServer={currentServer}
-        icon={currentServer.icon}  onpressRightIcon={handleOpenPress}/>
+      <Header icon={currentServer.icon} onpressRightIcon={handleOpenPress} />
 
       <View style={styles.mainView}>
 
@@ -92,10 +143,8 @@ const Home = () => {
           indicator={true} indicatorState={state == stateName?.connected ? true : false}
           boxStyle={{ ...styles.boxStyle, backgroundColor: "#fff", ...styles.shadow, minHeight: 30, }}
           textStyle={{ ...styles.textStyle, textTransform: "capitalize", color: "#000", }}
-          title={state == stateName.connected ? "connected" : 'disconnected'} 
-         
-          
-          />
+          title={state == stateName.connected ? "connected" : 'disconnected'}
+        />
 
         {/* animation view  */}
         <View style={styles.animationBox}>
@@ -113,15 +162,22 @@ const Home = () => {
           boxStyle={{ ...styles.boxStyle, backgroundColor: state == stateName.connected ? "red" : color.primary }}
           textStyle={{ ...styles.textStyle, }}
           title={state == stateName.connected ? "disconnect" : 'connect now'} />
+
+        <Button title='force disconnect' onPress={() => {
+          disconnect()
+            .then(() => console.log('disconnect: '))
+            .catch(console.log)
+        }} />
       </View>
       <ActionSheet
         bottomSheetRef={bottomSheetRef}
         snapPoints={snapPoints}
         handleSheetChanges={handleSheetChanges}
         handleClosePress={handleClosePress}
-       data={server_data}
-      />
-     
+        data={server_data}
+        currentServer={currentServer}
+        setCurrentServer={setCurrentServer} />
+
     </SafeAreaView>
   )
 }

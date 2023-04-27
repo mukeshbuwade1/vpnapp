@@ -1,8 +1,13 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { GestureResponderEvent, Image,  ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { color, font, img } from '../assets/Assets'
 
-const Header = ({ icon,onpressRightIcon }) => {
+interface props {
+  icon:ImageSourcePropType
+  onpressRightIcon:((event: GestureResponderEvent) => void) | undefined
+
+}
+const Header = ({ icon,onpressRightIcon }:props) => {
   return (
     <View style={{ ...styles.header }}>
       {/* left icon  */}
